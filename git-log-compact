@@ -7,9 +7,6 @@
 
 # License GPL v2
 
-{
-package main;
-
 our $VERSION = '1.1';
 
 use 5.008;
@@ -169,7 +166,7 @@ sub get_defaults {
 	return split(" ", join(" ", @defaults));
 }
 
-system("git rev-parse --git-dir >/dev/null") == 0 or exit(1);
+# Process defaults and arguments
 my ($usemark, $usegraph, $usereflog, $useboundary, $useleftright, $usecherry, $setusecolor, $usecolor, $defaultcolors, $usecad);
 my ($setpager, $pager);
 my @args = ();
@@ -182,6 +179,7 @@ $iw = undef;
 my $iw2 = "";
 my ($committer, $author, $ivar, $ivar2);
 $ivar = \$author;
+
 foreach my $arg (get_defaults(), @ARGV) {
 	my $nextisgrep;
 	if ($sawdashdash || $lastwasgrep) {
@@ -335,6 +333,7 @@ if ($mark && !$useleftright) {
 	$fixmark = "+" if $usecherry;
 }
 
+# Process colors
 my $color = "never";
 my ($hashcolor, $datecolor, $timecolor, $initialscolor, $autocolor) = ("", "", "", "", "");
 $usecolor = 1 if !$setusecolor && system("git", "config", "--get-colorbool", "color.diff") == 0;
@@ -360,11 +359,14 @@ if ($usecolor) {
 }
 my $decopt = "";
 $decopt = "$autocolor%d" if use_decorate;
+
+# Process pager
 $pager = qx(git var GIT_PAGER) unless $setpager;
 defined($pager) and chomp $pager;
 $ENV{LESS} = "-FRX" unless exists $ENV{LESS};
 $ENV{LV} = "-c" unless exists $ENV{LV};
 
+# Run `git log`
 my ($lastdate, $lastprefix, $lastplainprefix) = ("");
 my $msgopt = "%s";
 $msgopt = "%gd: $reflogsubj" if $usereflog;
@@ -378,6 +380,8 @@ if (defined($pager) && $pager ne "cat") {
 	open OUT, '>&STDOUT' or die "could not dupe STDOUT: $!";
 }
 select((select(OUT),$|=1)[0]);
+
+# Read the `git log` output
 my $delblank;
 my @lastparents = ();
 my $lastwascommit;
@@ -486,12 +490,11 @@ NOBREAKNEEDED:
 		$initialscolor, $initials, ($iw2 ? "/" : ""), $initials2,
 		($iw ? "$resetcolor " : ""), $subject;
 	$delblank = 1;
-}
+} #while <LOG>
 close LOG;
 close OUT;
 
-}	#package main
-
+# End of the main package
 ############################################################################
 
 BEGIN {	# A modification of Term::ANSIColor::Simple, which is licensed under the
