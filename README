@@ -191,71 +191,75 @@ In addition to allowing all the normal `git log` options except for
 `--notes`, `--format` and `--pretty` (`--oneline` is allowed and
 silently ignored), the following additional options may be utilized:
 
-   * `--seconds`  
+   * `--seconds`
      include seconds in the time (i.e. HH:MM:SS instead of just HH:MM)
 
-   * `--minutes`  
-     include minutes but not seconds in the time (i.e. HH:MM not HH:MM:SS)  
+   * `--minutes`
+     include minutes but not seconds in the time (i.e. HH:MM not HH:MM:SS)
      This is the default
 
-   * `--no-times`  
+   * `--no-times`
      omit the time field entirely
 
-   * `--two-initials`  
-     only show at most two initials instead of the usual three  
+   * `--two-initials`
+     only show at most two initials instead of the usual three
      This is the default if `--initials=author,committer` or
      `--initials=committer,author` is used.
 
-   * `--three-initials`  
-     show at most three initials  
+   * `--three-initials`
+     show at most three initials
      This is the default unless `--initials=author,committer` or
      `--initials=committer,author` is used.
 
-   * `--no-initials`  
+   * `--no-initials`
      omit the initials field entirely
 
-   * `--commit-message`  
+   * `--commit-message`
      when using `--walk-reflogs` show commit message not reflog message
 
-   * `--author-date`  
-     force use of author dates and times  
+   * `--author-date`
+     force use of author dates and times
      The default is to use committer dates and times unless
      `--author-date-order` is in effect.  This option forces author
      dates and times to always be used and overrides `--committer-date`.
 
-   * `--committer-date`  
-     force use of committer dates and times  
+   * `--committer-date`
+     force use of committer dates and times
      The default is to use committer dates and times if `--date-order` or
      `--topo-order` is in effect or `--author-date-order` is NOT in effect.
      This option forces committer dates and times to always be used and
      overrides a previous `--author-date` option.
 
-   * `--initials=author`  
-     show author initials  
+   * `--initials=author`
+     show author initials
      This is the default behavior
 
-   * `--initials=committer`  
+   * `--initials=committer`
      show committer initials instead of author initials
 
-   * `--initials=author,committer`  
-     show author and commiter initials separated by a `/`  
+   * `--initials=author,committer`
+     show author and commiter initials separated by a `/`
      This changes the initials width default from three to two.
 
-   * `--initials=committer,author`  
-     show commiter and author initials separated by a `/`  
+   * `--initials=committer,author`
+     show commiter and author initials separated by a `/`
      This changes the initials width default from three to two.
 
-   * `--time-zone=zone`  
-     set the TZ environment variable to `zone`  
+   * `--time-zone=zone`
+     set the TZ environment variable to `zone`
      This is an alterative to setting TZ before running `git log-compact`
      and will affect the time zone dates and times are displayed in.
 
-   * `--weekday`  
+   * `--weekday`
      show the weekday with the date
 
-   * `--no-weekday`  
-     do not show the weekday with the date  
+   * `--no-weekday`
+     do not show the weekday with the date
      This is the default behavior
+
+   * `--pager=PAGER`
+     pass output through PAGER
+     Default is the output of `git var GIT_PAGER`.
 
 In addition to the above options, color output is controlled as normal
 for `git log` with the addition of `color.log-compact.date`,

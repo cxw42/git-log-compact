@@ -37,6 +37,7 @@ usage: git%slog-compact [<options>] [<revision-range>] [[--] <path>...]
     --time-zone=<zone>    Set TZ environment variable to <zone>
     --weekday             Show the weekday with the date
     --no-weekday          Do not show the weekday with the date (default)
+    --pager=<pager>       Use <pager> (default `git var GIT_PAGER`)
 
     other log options     See `git help log` for more information
 
@@ -45,8 +46,8 @@ Default colors for dates, times and initials may be changed by setting
 `color.log-compact.initials` config values.  Dates and times are shown in the
 local time zone if TZ is not set in the environment and the `--time-zone`
 option has not been used.  Default options may be set in the
-`log-compact.defaults` config value and they will be treated as though they were
-listed first in the command line options list (e.g.
+`log-compact.defaults` config value and they will be treated as though they
+were listed first in the command line options list (e.g.,
 `git config log-compact.defaults "--abbrev=8 --seconds"`)
 USAGE
 
@@ -164,6 +165,7 @@ sub get_defaults {
 
 system("git rev-parse --git-dir >/dev/null") == 0 or exit(1);
 my ($usemark, $usegraph, $usereflog, $useboundary, $useleftright, $usecherry, $setusecolor, $usecolor, $usecad);
+my ($setpager, $pager);
 my @args = ();
 my $lastwasgrep;
 my $dateopt = "%ct";
@@ -304,6 +306,10 @@ foreach my $arg (get_defaults(), @ARGV) {
 		$usegraph = 1;
 	} elsif ($arg =~ /^(--grep|--grep-reflog|-S|-G)$/) {
 		$nextisgrep = 1;
+	} elsif ($arg =~ /^--pager=(.+)$/) {
+		$setpager = 1;
+		$pager = $1;
+		next;
 	} elsif ($arg eq "--") {
 		$sawdashdash = 1;
 	}
@@ -334,7 +340,7 @@ if ($usecolor) {
 }
 my $decopt = "";
 $decopt = "$autocolor%d" if use_decorate;
-my $pager = qx(git var GIT_PAGER);
+$pager = qx(git var GIT_PAGER) unless $setpager;
 defined($pager) and chomp $pager;
 $ENV{LESS} = "-FRX" unless exists $ENV{LESS};
 $ENV{LV} = "-c" unless exists $ENV{LV};
