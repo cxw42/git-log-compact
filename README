@@ -276,8 +276,29 @@ config value and they will be treated as though they appeared at
 the very beginning of the `git log-compact` command line option list
 (e.g. `git config log-compact.defaults "--abbrev=8 --seconds"`).
 
+If the `GIT_LOG_COMPACT_OPTIONS` environment variable is set, its contents
+will be used as default options **instead of** the contents of the
+`log-compact.defaults` variable.
+
+
+Making it run faster
+--------------------
+
+The things that take git-log-compact the longest are reading configuration.
+Therefore, for maximum speed, specify all the configuration in
+`GIT_LOG_COMPACT_OPTIONS`.  For example (in `bash`):
+
+    export GIT_LOG_COMPACT_OPTIONS="--decorate --color=always --pager=less --default-colors"
+
+
 Contributors
 ------------
 
    * Kyle J. McKay <mackyle@gmail.com>
    * Christopher White <cxwembedded@gmail.com>
+
+
+License
+-------
+
+GPL v2, <https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html>

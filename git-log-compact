@@ -48,10 +48,16 @@ Default colors for dates, times and initials may be changed by setting
 `color.log-compact.date`, `color.log-compact.time` and/or
 `color.log-compact.initials` config values.  Dates and times are shown in the
 local time zone if TZ is not set in the environment and the `--time-zone`
-option has not been used.  Default options may be set in the
-`log-compact.defaults` config value and they will be treated as though they
-were listed first in the command line options list (e.g.,
-`git config log-compact.defaults "--abbrev=8 --seconds"`)
+option has not been used.
+
+Default options may be set in the GIT_LOG_COMPACT_OPTIONS environment variable
+or in the git `log-compact.defaults` config value.  Default options will be
+treated as though they were listed first in the command line options list.
+Example usage:
+    `git config log-compact.defaults "--abbrev=8 --seconds"`)
+
+Note that, for speed, if GIT_LOG_COMPACT_OPTIONS is set, `log-compact.defaults`
+will NOT be used.
 USAGE
 
 my $timeformat = "%H:%M";
@@ -153,7 +159,9 @@ sub get_prefix {
 sub get_defaults {
 	# defaults are cumulative, but an empty setting resets
 	my @defaults = ();
-	my $opts = qx(git config --get-all log-compact.defaults 2>/dev/null);
+	my $opts = $ENV{GIT_LOG_COMPACT_OPTIONS};
+	$opts = qx(git config --get-all log-compact.defaults 2>/dev/null)
+		unless defined $opts;	# Only call `git config` if no env var.
 	chomp($opts);
 	foreach (split(/\r\n|\r|\n/, $opts, -1)) {
 		s/^\s+//; s/\s+$//;
