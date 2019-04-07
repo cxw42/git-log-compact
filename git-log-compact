@@ -2,11 +2,15 @@
 # -*- mode: perl -*-
 
 # git-log-compact.pl -- compact git log --oneline alternative with dates, times and initials
-# Copyright (C) 2015,2016 Kyle J. McKay <mackyle@gmail.com>.  All rights reserved.
+# Copyright (C) 2015-2019 Kyle J. McKay <mackyle@gmail.com> and contributors.
+# All rights reserved.
 
 # License GPL v2
 
-# Version 1.0
+{
+package main;
+
+our $VERSION = '1.1';
 
 use 5.008;
 use strict;
@@ -38,6 +42,8 @@ usage: git%slog-compact [<options>] [<revision-range>] [[--] <path>...]
     --weekday             Show the weekday with the date
     --no-weekday          Do not show the weekday with the date (default)
     --pager=<pager>       Use <pager> (default `git var GIT_PAGER`)
+    --default-colors      Use the default colors for ANSI terminals.
+                          Speeds up git-log-compact considerably.
 
     other log options     See `git help log` for more information
 
@@ -164,7 +170,7 @@ sub get_defaults {
 }
 
 system("git rev-parse --git-dir >/dev/null") == 0 or exit(1);
-my ($usemark, $usegraph, $usereflog, $useboundary, $useleftright, $usecherry, $setusecolor, $usecolor, $usecad);
+my ($usemark, $usegraph, $usereflog, $useboundary, $useleftright, $usecherry, $setusecolor, $usecolor, $defaultcolors, $usecad);
 my ($setpager, $pager);
 my @args = ();
 my $lastwasgrep;
@@ -310,6 +316,9 @@ foreach my $arg (get_defaults(), @ARGV) {
 		$setpager = 1;
 		$pager = $1;
 		next;
+	} elsif ($arg =~ /^--default-colors$/) {
+		$defaultcolors = 1;
+		next;
 	} elsif ($arg eq "--") {
 		$sawdashdash = 1;
 	}
@@ -330,13 +339,24 @@ my $color = "never";
 my ($hashcolor, $datecolor, $timecolor, $initialscolor, $autocolor) = ("", "", "", "", "");
 $usecolor = 1 if !$setusecolor && system("git", "config", "--get-colorbool", "color.diff") == 0;
 if ($usecolor) {
+	# Make a color
+	local *c = sub {
+		my $c = MY::Term::ANSIColor::Simple->new('');
+		$c->$_ foreach @_;
+		return "$c";
+	};
 	$color = "always";
-	$autocolor = "%C(auto)";
-	$hashcolor= qx(git config --get-color color.diff.commit "yellow");
-	$datecolor= qx(git config --get-color color.log-compact.date "bold blue");
-	$timecolor= qx(git config --get-color color.log-compact.time "green") if $timeformat;
-	$initialscolor = qx(git config --get-color color.log-compact.initials "red") if $iw;
-	$resetcolor = qx(git config --get-color "" "reset");
+	$autocolor= "%C(auto)";
+	$hashcolor= ($defaultcolors && c('yellow')) ||
+				qx(git config --get-color color.diff.commit "yellow");
+	$datecolor= ($defaultcolors && c(qw(bold blue))) ||
+				qx(git config --get-color color.log-compact.date "bold blue");
+	$timecolor= ($defaultcolors && c('green')) ||
+				qx(git config --get-color color.log-compact.time "green") if $timeformat;
+	$initialscolor = ($defaultcolors && c('red')) ||
+				qx(git config --get-color color.log-compact.initials "red") if $iw;
+	$resetcolor = ($defaultcolors && c('reset')) ||
+				qx(git config --get-color "" "reset");
 }
 my $decopt = "";
 $decopt = "$autocolor%d" if use_decorate;
@@ -469,4 +489,128 @@ NOBREAKNEEDED:
 }
 close LOG;
 close OUT;
+
+}	#package main
+
+############################################################################
+
+BEGIN {	# A modification of Term::ANSIColor::Simple, which is licensed under the
+	# same terms as Perl itself.  Therefore, it can be relicensed GPLv2 along
+	# with the rest of this code.  POD is omitted.
+	# sub reset() has been added, and implicit reset has been removed.
+package MY::Term::ANSIColor::Simple;
+
+use strict;
+use warnings;
+
+use parent qw/Exporter/;
+our @EXPORT = qw/color/;
+our @EXPORT_OK = qw/c/;
+
+our $VERSION = "0.10";
+
+use overload
+  '""' => sub { shift->{string} };
+
+my %effects = (
+                'bold'           => 1,
+                'dark'           => 2,
+                'faint'          => 2,
+                'underline'      => 4,
+                'underscore'     => 4,
+                'blink'          => 5,
+                'reverse'        => 7,
+                'concealed'      => 8,
+              );
+
+my %colors = (
+                'black'          => 30,
+                'red'            => 31,
+                'green'          => 32,
+                'yellow'         => 33,
+                'blue'           => 34,
+                'magenta'        => 35,
+                'cyan'           => 36,
+                'white'          => 37,
+
+                'bright_black'   => 90,
+                'bright_red'     => 91,
+                'bright_green'   => 92,
+                'bright_yellow'  => 93,
+                'bright_blue'    => 94,
+                'bright_magenta' => 95,
+                'bright_cyan'    => 96,
+                'bright_white'   => 97,
+             );
+
+my %grounds = (
+                'on_black'          => 40,
+                'on_red'            => 41,
+                'on_green'          => 42,
+                'on_yellow'         => 43,
+                'on_blue'           => 44,
+                'on_magenta'        => 45,
+                'on_cyan'           => 46,
+                'on_white'          => 47,
+
+                'on_bright_black'   => 100,
+                'on_bright_red'     => 101,
+                'on_bright_green'   => 102,
+                'on_bright_yellow'  => 103,
+                'on_bright_blue'    => 104,
+                'on_bright_magenta' => 105,
+                'on_bright_cyan'    => 106,
+                'on_bright_white'   => 107,
+              );
+
+my %all = (%effects, %colors, %grounds);
+my @colors_keys = keys %colors;
+my $colors_num = scalar @colors_keys;
+
+while ( my ($color, $code) = each %all ) {
+  no strict 'refs';
+  *{__PACKAGE__ . '::' . $color} = sub {
+    my $self = shift;
+    $self->{string} = "\e[${code}m" . $self->{string};	# no implicit reset
+    return $self;
+  };
+}
+
+sub reset {		# explicit reset required
+	my $self = shift;
+    $self->{string} .= "\e[0m";
+    return $self;
+}
+
+sub new {
+    my ($class, $string) = @_;
+    return bless +{ string => $string }, $class;
+}
+
+sub c {
+    my ($string) = @_;
+    return __PACKAGE__->new($string);
+}
+
+sub color {
+    my ($string) = @_;
+    return __PACKAGE__->new($string);
+}
+
+sub rainbow {
+  my $self = shift;
+  my @chars = split //, $self->{string};
+  my @colored;
+
+  for my $char (@chars) {
+    my $code = $colors{ $colors_keys[ int rand($colors_num) ] };
+    # other than spaces
+    $code = 0 if $char =~ /\s/;
+    push(@colored, "\e[${code}m$char\e[0m");
+  }
+  return join '', @colored;
+}
+1;
+}	#package MY::Term::ANSIColor::Simple;
+
 # vi: set ft=perl: #

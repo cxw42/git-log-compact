@@ -261,6 +261,11 @@ silently ignored), the following additional options may be utilized:
      pass output through PAGER
      Default is the output of `git var GIT_PAGER`.
 
+   * `--default-colors`
+     use the default colors on ANSI terminals.
+     This speeds things up because it means git-log-compact doesn't have
+     to run `git config --get-color` several times.
+
 In addition to the above options, color output is controlled as normal
 for `git log` with the addition of `color.log-compact.date`,
 `color.log-compact.time` and `color.log-compact.initials` config options
@@ -270,3 +275,9 @@ Furthermore, default options may be set in the `log-compact.defaults`
 config value and they will be treated as though they appeared at
 the very beginning of the `git log-compact` command line option list
 (e.g. `git config log-compact.defaults "--abbrev=8 --seconds"`).
+
+Contributors
+------------
+
+   * Kyle J. McKay <mackyle@gmail.com>
+   * Christopher White <cxwembedded@gmail.com>
