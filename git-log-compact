@@ -1,4 +1,5 @@
 #!/usr/bin/env perl
+# -*- mode: perl -*-
 
 # git-log-compact.pl -- compact git log --oneline alternative with dates, times and initials
 # Copyright (C) 2015,2016 Kyle J. McKay <mackyle@gmail.com>.  All rights reserved.
@@ -462,3 +463,4 @@ NOBREAKNEEDED:
 }
 close LOG;
 close OUT;
+# vi: set ft=perl: #
