@@ -350,7 +350,7 @@ if ($usecolor) {
 	local *c = sub {
 		my $c = MY::Term::ANSIColor::Simple->new('');
 		$c->$_ foreach @_;
-		return "$c";
+		return $c->string;
 	};
 	$color = "always";
 	$autocolor= "%C(auto)";
@@ -507,21 +507,16 @@ close OUT;
 
 BEGIN {	# A modification of Term::ANSIColor::Simple, which is licensed under the
 	# same terms as Perl itself.  Therefore, it can be relicensed GPLv2 along
-	# with the rest of this code.  POD is omitted.
+	# with the rest of this code.  POD and unused functions are omitted.
 	# sub reset() has been added, and implicit reset has been removed.
 package MY::Term::ANSIColor::Simple;
 
 use strict;
 use warnings;
 
-use parent qw/Exporter/;
-our @EXPORT = qw/color/;
-our @EXPORT_OK = qw/c/;
-
 our $VERSION = "0.10";
 
-use overload
-  '""' => sub { shift->{string} };
+sub string { shift->{string} };	# instead of overloading stringification
 
 my %effects = (
                 'bold'           => 1,
@@ -588,39 +583,16 @@ while ( my ($color, $code) = each %all ) {
 }
 
 sub reset {		# explicit reset required
-	my $self = shift;
-    $self->{string} .= "\e[0m";
-    return $self;
+  my $self = shift;
+  $self->{string} .= "\e[0m";
+  return $self;
 }
 
 sub new {
-    my ($class, $string) = @_;
-    return bless +{ string => $string }, $class;
+  my ($class, $string) = @_;
+  return bless +{ string => $string }, $class;
 }
 
-sub c {
-    my ($string) = @_;
-    return __PACKAGE__->new($string);
-}
-
-sub color {
-    my ($string) = @_;
-    return __PACKAGE__->new($string);
-}
-
-sub rainbow {
-  my $self = shift;
-  my @chars = split //, $self->{string};
-  my @colored;
-
-  for my $char (@chars) {
-    my $code = $colors{ $colors_keys[ int rand($colors_num) ] };
-    # other than spaces
-    $code = 0 if $char =~ /\s/;
-    push(@colored, "\e[${code}m$char\e[0m");
-  }
-  return join '', @colored;
-}
 1;
 }	#package MY::Term::ANSIColor::Simple;
 
